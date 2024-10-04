@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Web Tracker Playground</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- <script src="tracker.js"></script> -->
+    <script src="tracker.min.js"></script>
+  </head>
+  <body>
+    <div id="consent_modal" class="modal">
+      <h1>Consent Modal</h1>
+      <form>
+        <label for="allow_tracking">Allow tracking</label>
+        <input type="checkbox" name="allow_tracking" id="allow_tracking" />
+        <label for="allow_user">Allow user persistence</label>
+        <input type="checkbox" name="allow_user" id="allow_user" />
+        <label for="allow_session">Allow session persistence</label>
+        <input type="checkbox" name="allow_session" id="allow_session" />
+      </form>
+      <button id="save_tracking">Accept</button>
+      <button id="deny_tracking">Deny</button>
+    </div>
+
+    <script>
+      function getConsentSettings() {
+        const track = document.querySelector("#allow_tracking").checked;
+        const user = document.querySelector("#allow_user").checked;
+        const session = document.querySelector("#allow_session").checked;
+        return {
+          track,
+          user,
+          session,
+        };
+      }
+    </script>
+    <script>
+      const tracker = getTracker("http://localhost:8080");
+      tracker.trackPageView("/");
+
+      document.querySelector("#save_tracking").addEventListener("click", () => {
+        const settings = getConsentSettings();
+        tracker.updateTracker(settings.track, settings.user, settings.session);
+        closeConsentModal();
+        tracker.trackPageView("/");
+      });
+      document.querySelector("#deny_tracking").addEventListener("click", () => {
+        tracker.updateTracker(false, false, false);
+        closeConsentModal();
+      });
+    </script>
+
+    <h1>Tracker</h1>
+
+    <h2>Page view event tests</h2>
+    <button id="pv_landing">Landing</button>
+    <button id="pv_product">Product</button>
+    <button id="pv_cart">Cart</button>
+    <script>
+      [
+        { id: "#pv_landing", page: "/landing" },
+        { id: "#pv_product", page: "/product" },
+        { id: "#pv_cart", page: "/cart" },
+      ].forEach((element) => {
+        document.querySelector(element.id).addEventListener("click", () => {
+          tracker.trackPageView(element.page);
+        });
+      });
+    </script>
+
+    <h2>Click event tests</h2>
+    <button id="cl_cta1">CTA1</button>
+    <button id="cl_cta2">CTA2</button>
+    <button id="cl_cta3">CTA3</button>
+    <script>
+      [
+        { id: "#cl_cta1", data: "cta1" },
+        { id: "#cl_cta2", data: "cta2" },
+        { id: "#cl_cta3", data: "cta3" },
+      ].forEach((element) => {
+        document.querySelector(element.id).addEventListener("click", () => {
+          tracker.trackClick(element.data);
+        });
+      });
+    </script>
+  </body>
+</html>
